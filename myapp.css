@@ -1,0 +1,82 @@
+/* CSS declarations go here */
+body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 200;
+    margin: 50px 0;
+    padding: 0;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+
+#outer {
+}
+
+.player {
+    cursor: pointer;
+    padding: 5px;
+}
+
+.player .name {
+    display: inline-block;
+    width: 300px;
+    font-size: 1.75em;
+}
+
+.player .score {
+    display: inline-block;
+    width: 100px;
+    text-align: right;
+    font-size: 2em;
+    font-weight: bold;
+    color: #777;
+}
+
+.player.selected {
+    background-color: yellow;
+}
+
+.player.selected .score {
+    color: black;
+}
+
+.yesvoters {
+
+}
+
+.novoters {
+
+}
+
+.details, .none {
+}
+
+.none {
+    color: #777;
+}
+
+.inc {
+  
+}
+#quontainer {
+
+}
+.oknesset iframe{
+    width: 500px;
+    height: 380px;
+}
+
+[class*="span"] {
+    margin-left: 35px !important;
+}
+
+.visitor img {
+    width: 30px;
+    height: 30px
+}
+
+.row {
+    margin-top: 8px;
+}

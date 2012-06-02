@@ -1,0 +1,83 @@
+<head>
+  <title>myapp</title>
+    <meta property="og:title" content="\u05d4\u05e6\u05e2\u05ea\u0020\u05d7\u05d5\u05e7"/>
+    <meta property="og:image" content="https://fbcdn-photos-a.akamaihd.net/photos-ak-snc7/v27562/73/140153199345253/app_1_140153199345253_170.gif" />
+    <meta property="og:site_name" content="Moovu"/>
+    <meta property="og:description" content="Social Parliament"/>
+    <meta property="fb:app_id" content="140153199345253"/>
+    <meta property="og:type" content="kolorabim:bill"/>
+</head>
+
+<body>
+  <div class="row">
+    <div class="span3">
+      {{> myapp}}
+    </div>
+    <div class="span6">
+      {{> binfo}}
+      {{> oknesset}}
+    </div>
+  </div>
+</body>
+
+<template name="oknesset">
+  <div class="oknesset">
+    <iframe frameborder="0" src='http://oknesset.org/bill/{{vid}}/embed/'></iframe>
+    <div class="fb-comments" data-href="{{commentsHref}}" data-num-posts="4" data-width="470"></div>
+  </div>
+</template>
+
+<template name="binfo">
+  <div class="binfo">
+  <span class="label label-warning">{{status}}</span>
+  </div>
+</template>
+
+<template name="myapp">
+
+    <div class="row">
+      <div class="span1">
+      <input id='voteyes' type="button" class="inc btn btn-success btn-large" value="vote yes" />
+      </div>
+      <div class="span1">
+      <input id='voteno' type="button" class="inc btn btn-danger btn-large" value="vote no" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="span1">
+    <div class="yesvoters">
+      <ul class="thumbnails">
+    {{#each players}}
+        {{#if voted 1}}
+            {{> player}}
+        {{/if}}
+    {{/each}}
+      </ul>
+    </div>
+      </div>
+
+      <div class="span1">
+    <div class="novoters">
+      <ul class="thumbnails">
+    {{#each players}}
+        {{#if voted 0}}
+            {{> player}}
+        {{/if}}
+    {{/each}}
+      </ul>
+    </div>
+      </div>
+    </div>
+
+
+
+</template>
+
+<template name="player">
+  <li class="span1">
+    <div class="thumbnail">
+      <img src='https://graph.facebook.com/{{fbid}}/picture'></img>
+    </div>
+  </li>
+</template>

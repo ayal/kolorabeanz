@@ -1,0 +1,8 @@
+<body>
+  {{> fbconnect}}
+</body>
+
+<template name="fbconnect">
+  <div id="fb-root"></div>
+  {{connect}}
+</template>

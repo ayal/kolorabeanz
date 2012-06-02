@@ -1,0 +1,32 @@
+<head>
+
+</head>
+
+<body>
+  <div class="row">
+    <div class="span12">
+    <div id="visitors">
+	<div class="alert alert-block alert-success">
+	  <strong>Currently in parliament: </strong>
+	  {{> visitors}}
+	  <h5>   .</h5>
+	</div>
+    </div>
+    </div>
+  </div>
+</body>
+
+<template name="visitors">
+  <div class="visitors">
+    {{#each visitors}}
+            {{> visitor}}
+    {{/each}}
+  </div>
+</template>
+
+<template name="visitor">
+  <div class="visitor" a="{{ff}}">
+    <img src='https://graph.facebook.com/{{fbid}}/picture'></img>
+  </div>
+</template>
+

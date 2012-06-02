@@ -1,0 +1,76 @@
+<head>
+  <title>myapp</title>
+</head>
+
+<body>
+  <div class="row">
+    <div class="span3">
+      {{> myapp}}
+    </div>
+    <div class="span6">
+      {{> binfo}}
+      {{> oknesset}}
+    </div>
+  </div>
+</body>
+
+<template name="oknesset">
+  <div class="oknesset">
+    <iframe frameborder="0" src='http://oknesset.org/bill/{{vid}}/embed/'></img>
+  </div>
+</template>
+
+<template name="binfo">
+  <div class="binfo">
+  <span class="label label-warning">{{status}}</span>
+  </div>
+</template>
+
+<template name="myapp">
+
+    <div class="row">
+      <div class="span1">
+      <input id='voteyes' type="button" class="inc btn btn-success btn-large" value="vote yes" />
+      </div>
+      <div class="span1">
+      <input id='voteno' type="button" class="inc btn btn-danger btn-large" value="vote no" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="span1">
+    <div class="yesvoters">
+      <ul class="thumbnails">
+    {{#each players}}
+        {{#if voted 1}}
+            {{> player}}
+        {{/if}}
+    {{/each}}
+      </ul>
+    </div>
+      </div>
+
+      <div class="span1">
+    <div class="novoters">
+      <ul class="thumbnails">
+    {{#each players}}
+        {{#if voted 0}}
+            {{> player}}
+        {{/if}}
+    {{/each}}
+      </ul>
+    </div>
+      </div>
+    </div>
+
+
+
+</template>
+
+<template name="player">
+  <li class="span1">
+    <div class="thumbnail">
+      <img src='https://graph.facebook.com/{{fbid}}/picture'></img>
+    </div>
+  </li>
+</template>

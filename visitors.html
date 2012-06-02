@@ -1,0 +1,38 @@
+<head>
+
+</head>
+
+<body>
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+	<ul class="nav">
+	  <li class="active">
+	    <a href="#">Home</a>
+	  </li>
+	  <li><a href="#">Link</a></li>
+	</ul>
+	<ul class="nav pull-right">
+	    {{> visitors}}
+	</ul>
+      </div>
+    </div>
+  </div>
+</body>
+
+<template name="visitors">
+
+    {{#each visitors}}
+            {{> visitor}}
+    {{/each}}
+
+</template>
+
+<template name="visitor">
+  <li class="visitor" a="{{ff}}">
+    <a href="#">
+    <img src='https://graph.facebook.com/{{fbid}}/picture'></img>
+    </a>
+  </li>
+</template>
+
