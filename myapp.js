@@ -34,7 +34,7 @@ if (Meteor.is_client) {
 	   });
 
     Meteor.startup(function () {
-		       setTimeout(function(){
+
 		       var hash = {
 		       };
 		       var context = {
@@ -43,50 +43,48 @@ if (Meteor.is_client) {
 		       };
 		       var all = [];
 		       
-				      var thecount = Meteor.call('countit', function(e, r){
-								     return otherBills.find({});
-		     
+		       var thecount = Meteor.call('countit', function(e, r){
+						      if (r === 0) {
+							  $.each([1, 1, 1, 1], function(page) {
+								     var url = 'http://oknesset.org/api/bill/';
+								     if (page !== 0) {
+									 url += '?page_num=' + page;
+								     }
+								     var req = $.ajax({
+											  url: url,
+											  dataType: 'jsonp',
+											  cache: true,
+											  jsonp: 'callback',
+											  success: function(data) {
+											      console.log('bill');
+											      $.each(data, function(i, bill) {
+													 bill.bill_id = bill.url.replace('/bill/', '').replace('/', '');
+													 $.each(bill.votes.all, function(j, v) {
+														    if (!v) return;
+														    var voters = v.count_against_votes + v.count_didnt_votes + v.count_for_votes;
+														    if (voters > 50 && !hash[bill.url]) {
+															hash[bill.url] = bill;
+															bill.voters = voters;
+															context.bills.push(bill);
+															otherBills.insert(bill);
+														    }
+
+														});
+												     });
+											  },
+											  error: function(xhr, ajaxOptions, thrownError) {
+											      console.log(arguments);
+											  }
+										      });
+								     all.push(req);
+
+								 });
+						      }
 						  });
-				      
-				      return [];
-
-				      $.each([1, 1], function(page) {
-						 var url = 'http://oknesset.org/api/bill/';
-						 if (page !== 0) {
-						     url += '?page_num=' + page;
-						 }
-				  var req = $.ajax({
-						       url: url,
-						       dataType: 'jsonp',
-						       cache: true,
-						       jsonp: 'callback',
-						       success: function(data) {
-							   console.log('bill');
-							   $.each(data, function(i, bill) {
-								      bill.bill_id = bill.url.replace('/bill/', '').replace('/', '');
-								      $.each(bill.votes.all, function(j, v) {
-										 if (!v) return;
-										 var voters = v.count_against_votes + v.count_didnt_votes + v.count_for_votes;
-										 if (voters > 50 && !hash[bill.url]) {
-										     hash[bill.url] = bill;
-										     bill.voters = voters;
-										     context.bills.push(bill);
-										     otherBills.insert(bill);
-										 }
-
-									     });
-								  });
-						       },
-						       error: function(xhr, ajaxOptions, thrownError) {
-							   console.log(arguments);
-						       }
-						   });
-				  all.push(req);
-
-			      });
-
-				  }, 5000);
+		       
+		       
 		   });
+    
     Template.others.bills = function () {
 	return otherBills.find({});
     };
