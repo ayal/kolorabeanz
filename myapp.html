@@ -11,6 +11,11 @@
 <body>
   <div class="row">
     <div class="span3">
+      <div class="row">
+	{{> others}}
+      </div>
+    </div>
+    <div class="span3">
       {{> myapp}}
     </div>
     <div class="span6">
@@ -19,6 +24,22 @@
     </div>
   </div>
 </body>
+
+<template name="others">
+  <div class="others">
+    <ul>
+    {{#each bills}}
+    <li>
+        <div>
+        <a href="/?vid={{bill_id}}">{{bill_title}}</a>
+            <span>{{stage_text}}</span>
+            <span>{{voters}}</span>
+        </div>
+        </li>
+    {{/each}}
+    </ul>
+  </div>
+</template>
 
 <template name="oknesset">
   <div class="oknesset">

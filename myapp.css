@@ -79,4 +79,5 @@ body {
 
 .row {
     margin-top: 8px;
+    direction: rtl;
 }
