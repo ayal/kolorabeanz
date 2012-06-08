@@ -15,10 +15,14 @@
 	{{> others}}
       </div>
     </div>
+    <div class="span1">
+      <div class="row">
+      </div>
+    </div>
     <div class="span3">
       {{> myapp}}
     </div>
-    <div class="span6">
+    <div class="span5">
       {{> binfo}}
       {{> oknesset}}
     </div>
@@ -27,14 +31,19 @@
 
 <template name="others">
   <div class="others">
-    <ul>
+    <ul class="nav nav-list">
+      <li class="nav-header">
+	List header
+      </li>
     {{#each bills}}
     <li>
-        <div>
-        <a href="/?vid={{bill_id}}">{{bill_title}}</a>
+        <a href="/?vid={{bill_id}}">
+	  <i>
 	    <span class="badge badge-info">{{voters}}</span>
-        </div>
-        </li>
+	  </i>
+	  {{bill_title}}
+	</a>
+    </li>
     {{/each}}
     </ul>
   </div>

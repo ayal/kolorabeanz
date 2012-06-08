@@ -158,6 +158,7 @@ if (Meteor.is_server) {
     
     Meteor.methods({
 		       countit: function () {
+			   this.unblock();
 			   return otherBills.find({}).count();
 		       }
 		   });

@@ -69,7 +69,7 @@ body {
 }
 
 [class*="span"] {
-    margin-left: 35px !important;
+    margin-left: 55px !important;
 }
 
 .visitor img {
@@ -80,4 +80,14 @@ body {
 .row {
     margin-top: 8px;
     direction: rtl;
+}
+
+.thumbnails > li {
+float: right !important;
+}
+
+ul li a{
+text-overflow: ellipsis; 
+overflow: hidden; 
+white-space:nowrap; 
 }
