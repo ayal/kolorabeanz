@@ -20,6 +20,8 @@ otherBills = new Meteor.Collection("others");
 
 if (Meteor.is_client) {
     window.vid = getParameterByName('vid');
+    var hash = {
+    };
     
     $.ajax({
 	       url: 'http://oknesset.org/api/bill/' + window.vid + '/',
@@ -27,6 +29,20 @@ if (Meteor.is_client) {
 	       jsonp: 'callback',
                success: function(data){
 		   Session.set('binfo', data);
+		   var bill = data;
+		   $.each(bill.votes.all, function(j, v) {
+			      
+			      if (!v) return;
+			      var voters = v.count_against_votes + v.count_didnt_votes + v.count_for_votes;
+			      if (!hash[bill.url]) {
+				  hash[bill.url] = bill;
+				  bill.voters = voters;
+				  Meteor.call('insertit', bill, function(e,r){
+						  console.log('>', e, r);
+					      });
+			      }
+			      
+			  });
                },
 	       error: function(xhr, ajaxOptions, thrownError) {
 		   console.log(arguments);
@@ -34,16 +50,14 @@ if (Meteor.is_client) {
 	   });
 
     Meteor.startup(function () {
-
-		       var hash = {
-		       };
+		       
 		       var context = {
 			   
 			   bills: []
 		       };
 		       var all = [];
 		       
-		       var thecount = Meteor.call('countit', function(e, r){
+		       var thecount = Meteor.call('countit', 1, function(e, r){
 						      if (r === 0) {
 							  $.each([1, 1, 1, 1], function(page) {
 								     var url = 'http://oknesset.org/api/bill/';
@@ -66,7 +80,9 @@ if (Meteor.is_client) {
 															hash[bill.url] = bill;
 															bill.voters = voters;
 															context.bills.push(bill);
-															otherBills.insert(bill);
+															Meteor.call('insertit', bill, function(e,r){
+																	console.log('>', e, r);
+																    });
 														    }
 
 														});
@@ -81,8 +97,6 @@ if (Meteor.is_client) {
 								 });
 						      }
 						  });
-		       
-		       
 		   });
     
     Template.others.bills = function () {
@@ -155,14 +169,30 @@ if (Meteor.is_server) {
 /*    Template.OGZ.BILL_TITLE = function () {
 	return 'LALA';
     };*/
-    
+    billshash = {};
     Meteor.methods({
 		       countit: function () {
 			   this.unblock();
 			   return otherBills.find({}).count();
+		       },
+		       insertit: function(bill) {
+
+			   if(!billshash[bill.url]) {
+			       billshash[bill.url] = bill;
+			       otherBills.insert(bill);
+			       return 3;
+			   }
+			   else {
+			       return 2;
+			   }
+
 		       }
 		   });
     Meteor.startup(function () {
+		       var billz = otherBills.find({});
+		       billz.forEach(function (bill) {
+					 billshash[bill.url] = bill;
+				     });
 //		       Players.remove({});
 //		       Players.ensureIndex({fbid:1});		       
 		   });

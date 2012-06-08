@@ -70,7 +70,7 @@ body {
 }
 
 [class*="span"] {
-    margin-left: 55px !important;
+    margin-right: 40px !important;
 }
 
 .visitor img {
@@ -84,7 +84,11 @@ body {
 }
 
 .thumbnails > li {
-float: right !important;
+float: left !important;
+}
+
+[class*="span"] {
+    float: right;
 }
 
 ul li a{

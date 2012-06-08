@@ -5,7 +5,7 @@ Template.fbconnect.connect = function () {
     var retrySDK = true;
     var FBReady = $.Deferred();
     var FBLoggedIn = $.Deferred();
-    var status = null;
+    window.status = null;
     
     fbfunction = function(wr, wait){
 	return function(a){
@@ -38,13 +38,14 @@ Template.fbconnect.connect = function () {
 	    return; // there is no need to update
 	}
 	
-	status = resp.status;
+	window.status = resp.status;
 	Session.set('fbstatus', status);
 	console.log('fb user status', status);
 	
 	if (resp.status === 'connected') {
 	    FB.api('/me?fields=email,picture,name,permissions', function (response) {
 		       Session.set("current_user", response);
+		       window.cuser = response;
 		       FBStatus.resolve();
 		       FBLoggedIn.resolve();
 		   });
@@ -79,11 +80,13 @@ Template.fbconnect.connect = function () {
 	       })();
 
     verify_fb_status = fbfunction(function(cb) {
+				      console.log('cuser', window.cuser);
 				      if (status === 'SDKERR') {
 					  _gaq.push(['_trackEvent', 'Errors', 'Player_Engagement_Error', 'SDKERR']);
 					  return;
 				      }
-				      else if (status !== 'connected') {
+				      else if (!window.cuser || !window.cuser.permissions || JSON.stringify(window.cuser.permissions.data).indexOf('publish_actions') === -1) {
+//					  $('#myModal').modal();
 					  _gaq.push(['_trackEvent', 'Funnel', 'Player_user_not_verified', 'user']);
 					  FB.login(function(response) {
 						       if (response.authResponse) {

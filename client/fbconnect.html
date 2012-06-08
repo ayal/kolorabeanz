@@ -1,8 +1,21 @@
 <body>
   {{> fbconnect}}
+<div class="modal hide" id="myModal">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>Modal header</h3>
+  </div>
+  <div class="modal-body">
+    <p>One fine body.</p>
+    <a href="#" class="btn" data-dismiss="modal">CONNECT WITH FACBOOK</a>
+  </div>
+  <div class="modal-footer">
+  </div>
+</div>
 </body>
 
 <template name="fbconnect">
   <div id="fb-root"></div>
   {{connect}}
 </template>
+
