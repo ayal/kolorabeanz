@@ -19,6 +19,15 @@ Players = new Meteor.Collection("players");
 otherBills = new Meteor.Collection("others");
 
 if (Meteor.is_client) {
+
+    setTimeout(function(){
+		   $('#myappid').popover({placement: 'left'});
+		   $('#myappid').popover('show');
+		   setTimeout(function(){
+				  $('#myappid').popover('hide');
+			      }, 5000);
+	       }, 9000);
+
     window.vid = getParameterByName('vid');
     var hash = {
     };

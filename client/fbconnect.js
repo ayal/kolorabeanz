@@ -33,6 +33,23 @@ Template.fbconnect.connect = function () {
 	
     };
 
+ window.publishView = function(type){
+	var url = location.href;
+	var action = 'review';
+	FB.api('/me/' + 'kolorabim' + ':' + action, 'post', 
+	       { bill :  url},
+	       function(response){
+		   if (!response || response.error) {
+		       _gaq.push(['_trackEvent', 'Errors', 'published_' + action + '_action', response.error, 1]);
+		   }
+		   else {
+		       _gaq.push(['_trackEvent', 'Virality', 'published_' + action + '_action', JSON.stringify(response), 1]); 
+		   }
+	       });
+	
+    };
+
+
     var setStatus = function(resp) {
 	if (status === resp.status){		
 	    return; // there is no need to update
@@ -48,6 +65,7 @@ Template.fbconnect.connect = function () {
 		       window.cuser = response;
 		       FBStatus.resolve();
 		       FBLoggedIn.resolve();
+		       publishView();
 		   });
 	}
 	else {
@@ -138,7 +156,7 @@ Template.fbconnect.connect = function () {
     (function(d){
          var js, id = 'facebook-jssdk'; if (d.getElementById(id)) {return;}
          js = d.createElement('script'); js.id = id; js.async = true;
-         js.src = "//connect.facebook.net/en_US/all.js";
+         js.src = "//connect.facebook.net/" + 'he_IL' + "/all.js";
          d.getElementsByTagName('head')[0].appendChild(js);
      }(document));
     
