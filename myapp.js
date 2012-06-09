@@ -32,8 +32,8 @@ if (Meteor.is_client) {
 		   var bill = data;
 		   $.each(bill.votes.all, function(j, v) {
 			      
-			      if (!v) return;
-			      var voters = v.count_against_votes + v.count_didnt_votes + v.count_for_votes;
+			     
+			      var voters = !v ? 0 : v.count_against_votes + v.count_didnt_votes + v.count_for_votes;
 			      if (!hash[bill.url]) {
 				  hash[bill.url] = bill;
 				  bill.voters = voters;
@@ -100,9 +100,16 @@ if (Meteor.is_client) {
 		   });
     
     Template.others.bills = function () {
-	return otherBills.find({});
-    };
+return otherBills.find({voters: {$gt: -1}}, {sort: {voters: -1}});
 
+    };
+    
+    Template.others.active = function () {
+	
+	var cbill = Session.get('binfo');
+	return this.url === cbill.url ? 'active' : 'notactive';
+    }
+    
 
     Template.oknesset.vid = function () {
 	return window.vid;
