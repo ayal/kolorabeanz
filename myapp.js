@@ -1,7 +1,6 @@
 // Set up a collection to contain player information. On the server,
 // it is backed by a MongoDB collection named "players."
-function getParameterByName(name)
-{
+function getParameterByName(name) {
     
   name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
   var regexS = "[\\?&]" + name + "=([^&#]*)";
@@ -18,17 +17,44 @@ function getParameterByName(name)
 Players = new Meteor.Collection("players");
 otherBills = new Meteor.Collection("others");
 
+Meteor.methods({'upsertToPlayers': function(vid, cuser, thevote) {
+		     var plr = Players.findOne({vid: vid, fbid: cuser.id});
+
+		     if (!plr) {
+			 id = Players.insert({fbid: cuser.id, name: cuser.name, vote: thevote, vid: vid});	
+		     }
+		     else {
+			 id = plr._id;
+		     }
+		     
+		     console.log('id', id);
+
+		     if (!id) {
+			 return;
+		     }
+
+		     Players.update(id, {$set: {vote: thevote}});  
+		     
+		     if (Meteor.is_client || Meteor.is_simulation) {
+			 if (thevote === 1) {
+			     publishVote('\u05d1\u05e2\u05d3');
+			 }
+			 else if (thevote === 0) {
+			     publishVote('\u05e0\u05d2\u05d3');
+			 }		     
+		     }
+		 }});
+
 if (Meteor.is_client) {
 
     setTimeout(function(){
 		   $('#myappid').popover({placement: 'left'});
 		   $('#myappid').popover('show');
-		   setTimeout(function(){
-				  $('#myappid').popover('hide');
-			      }, 5000);
-	       }, 9000);
+		   
+	       }, 12000);
 
     window.vid = getParameterByName('vid');
+    
     var hash = {
     };
     
@@ -39,6 +65,7 @@ if (Meteor.is_client) {
                success: function(data){
 		   Session.set('binfo', data);
 		   var bill = data;
+		   if (bill.votes)
 		   $.each(bill.votes.all, function(j, v) {
 			      
 			     
@@ -109,26 +136,31 @@ if (Meteor.is_client) {
 		   });
     
     Template.others.bills = function () {
-return otherBills.find({voters: {$gt: -1}}, {sort: {voters: -1}});
-
+	return otherBills.find({voters: {$gt: -1}}, {sort: {voters: -1}});
     };
     
     Template.others.active = function () {
 	
 	var cbill = Session.get('binfo');
 	return this.url === cbill.url ? 'active' : 'notactive';
-    }
+    };
     
 
     Template.oknesset.vid = function () {
 	return window.vid;
     };
 
+    Template.layout.valid = function () {
+	return (window.vid ? 'yesvid' : 'novid');
+    };
+
+    Template.layout.sizeOfOthers = function () {
+	return (window.vid ? 'span3' : 'span5');
+    };
+
     Template.oknesset.commentsHref = function() {
 	return location.href;  
     };
-
-
 
     Template.binfo.status = function () {
 	var binfo = Session.get('binfo');
@@ -136,36 +168,24 @@ return otherBills.find({voters: {$gt: -1}}, {sort: {voters: -1}});
     };
 
     Template.myapp.players = function () {
-	var x = Players.find({vid: window.vid}, {sort: {vote: -1, name: 1}});
+	var x = Players.find({vid: window.vid, fbid: {$exists: true}}, {sort: {vote: -1, name: 1}});
 	return x;
     };      
 
     Template.myapp.events = {
 	'click input.inc': function (e) {
-	    window.verify_fb_status(function(){
+	    window.verify_fb_status(function() {
 					var cuser = Session.get("current_user");
-					if (!cuser){
-					    alert('no user yet');
+					if (!cuser || !cuser.id){
+					    alert('WHO ARE YOU');
 					    return;
 					}
-					var plr = Players.findOne({vid: window.vid, fbid: cuser.id});
-					var id = null;
-					if (!plr) {
-					    id = Players.insert({fbid: cuser.id, name: cuser.name, vote: 0, vid: window.vid});
-					}
-					else {
-					    id = plr._id;
-					}
-					console.log('id', id);
 					
-					if (e.srcElement.id === 'voteyes') {
-					    Players.update(id, {$set: {vote: 1}});   
-					    publishVote('\u05d1\u05e2\u05d3');
-					}
-					else {
-					    Players.update(id, {$set: {vote: 0}});   
-					    publishVote('\u05e0\u05d2\u05d3');
-					}
+					Meteor.call('upsertToPlayers',
+						    window.vid,
+						    cuser,
+						    e.srcElement.id === 'voteyes' ? 1 : 0,
+						    function(){});
 				    });
 	}
     };
@@ -182,9 +202,6 @@ return otherBills.find({voters: {$gt: -1}}, {sort: {voters: -1}});
 
 // On server startup, create some players if the database is empty.
 if (Meteor.is_server) {
-/*    Template.OGZ.BILL_TITLE = function () {
-	return 'LALA';
-    };*/
     billshash = {};
     Meteor.methods({
 		       countit: function () {
@@ -196,14 +213,15 @@ if (Meteor.is_server) {
 			   if(!billshash[bill.url]) {
 			       billshash[bill.url] = bill;
 			       otherBills.insert(bill);
-			       return 3;
+			       return 'inserted';
 			   }
 			   else {
-			       return 2;
+			       return 'existed';
 			   }
 
 		       }
 		   });
+
     Meteor.startup(function () {
 		       var billz = otherBills.find({});
 		       billz.forEach(function (bill) {

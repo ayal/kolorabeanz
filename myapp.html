@@ -9,22 +9,27 @@
 </head>
 
 <body>
+{{>layout}}
+</body>
+
+<template name="layout">
   <div class="row">
-    <div id="myappid" data-placement="left" class="span3" rel="popover" data-content="בכנסת כבר הצביעו.. מה איתך?!" data-original-title="מה דעתך?">
+    <div id="myappid" data-placement="left" class="span3 {{valid}}"
+ rel="popover" data-content="בכנסת כבר הצביעו.. מה איתך?!" data-original-title="מה דעתך?">
       {{> myapp}}
     </div>
-    <div class="span5">
+    <div class="span5 {{valid}}">
       {{> binfo}}
       {{> oknesset}}
     </div>
-    <div class="span3">
+    <div class="{{sizeOfOthers}}">
       <div class="row">
 	{{> others}}
 	<div class="fb-activity" style="margin-top:30px" data-site="kolorabim.meteor.com" data-width="300" data-height="301" data-header="true" data-border-color="white" data-recommendations="false"></div>
       </div>
     </div>
   </div>
-</body>
+</template>
 
 <template name="others">
   <div class="others">

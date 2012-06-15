@@ -62,15 +62,19 @@ Template.fbconnect.connect = function () {
 	if (resp.status === 'connected') {
 	    FB.api('/me?fields=email,picture,name,permissions', function (response) {
 		       Session.set("current_user", response);
-		       window.cuser = response;
-		       FBStatus.resolve();
-		       FBLoggedIn.resolve();
-		       publishView();
+		       if (!response.id) {
+			   // ma
+		       }
+		       else {
+			   window.cuser = response;
+			   FBStatus.resolve();
+			   FBLoggedIn.resolve();
+			   publishView();
+		       }
 		   });
 	}
 	else {
 	    FBStatus.resolve();
-	    window.markMyVisit(window.cvid);
 	}
     };
     
@@ -114,7 +118,7 @@ Template.fbconnect.connect = function () {
 							   _gaq.push(['_trackEvent', 'Funnel', 'User_Cancel_Allow', '']);
 						       }
 						       setStatus(response);
-						   }, {scope: 'publish_actions'});
+						   }, {scope: 'email,publish_actions'});
 				      }
 				      else {
 					  cb();

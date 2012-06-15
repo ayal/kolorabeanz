@@ -96,3 +96,11 @@ text-overflow: ellipsis;
 overflow: hidden; 
 white-space:nowrap; 
 }
+
+.popover {
+    direction: rtl !important;
+}
+
+.novid {
+    display: none;
+}

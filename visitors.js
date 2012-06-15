@@ -3,6 +3,52 @@
 
 Visitors = new Meteor.Collection("visitors");
 
+Meteor.methods({'markMyVisit' :  function(cuser, cvid) {
+		    console.log('marking on the client', cuser, cvid);
+		    var expr = (new Date()).getTime() + 15000;
+		    if (!cuser){
+			console.log('no cuser', cuser);
+			if (cvid) {
+			    var objToUpdate = Visitors.findOne({_id: cvid});
+			    if (!objToUpdate) {
+				if (Meteor.is_simulation || Meteor.is_client) {
+				    window.cvid = null; // invalidate the cvid on the client since it was delete by the server's cleanup
+				}
+				return Visitors.insert({fbid: 'ayal.gelles', name: 'Anonymous', expr: expr});
+			    }
+
+			    Visitors.update(cvid, {$set: {expr: expr}});
+			    return cvid;
+			}
+			
+			return Visitors.insert({fbid: 'ayal.gelles', name: 'Anonymous', expr: expr});
+		    }
+		    else {
+			console.log('yes cuser', vid);
+			var vid = Visitors.findOne({fbid: cuser.id});
+			if (!vid) {
+			    return Visitors.insert({fbid: cuser.id, name: cuser.name, expr: expr});
+			}
+			
+			var idToUpdate = cvid || vid._id;
+			var objToUpdate = Visitors.findOne({_id: idToUpdate});
+			console.log('idtoupdate', idToUpdate);
+			if (typeof objToUpdate === 'undefined' || !idToUpdate) {
+			    if (Meteor.is_simulation || Meteor.is_client) {
+				window.cvid = null; // invalidate the cvid on the client since it was delete by the server's cleanup
+			    }
+			    return Visitors.insert({fbid: cuser.id, name: cuser.name, expr: expr});
+			}
+
+			
+			Visitors.update(idToUpdated, {$set: {fbid: cuser.id, name: cuser.name, expr: expr}});
+			return idToUpdate;
+
+			return undefined;
+		    }
+		}});
+
+
 if (Meteor.is_client) {
 
     function setCookie(c_name,value,exdays) {
@@ -32,93 +78,28 @@ if (Meteor.is_client) {
 
     // idleTimer() takes an optional argument that defines the idle timeout
     // timeout is in milliseconds; defaults to 30000
-    $.idleTimer(1000);
+    $.idleTimer(500);
     
-    $(document).bind("idle.idleTimer", function(){
-			 window.markMyVisit(window.cvid); 
-     		     });
+		    
+    FBStatus.done(function(){
+		      Meteor.call('markMyVisit', Session.get("current_user"), window.cvid, function(e, r){
+				      console.log('got cvid', r);
+				      window.cvid = r;
+				  });
+		  });
+
+    $(document).bind("active.idleTimer", function() {
+			 console.log('marking visit');
+			 Meteor.call('markMyVisit', Session.get("current_user"), window.cvid, function(e, r){
+					 console.log('got cvid', r);
+					 window.cvid = r;
+				     }); 
+		     });    
+
     
-    // 
-    Meteor.startup(function () {
-		       window.FBStatus = window.FBStatus || $.Deferred();
-		       FBStatus.done(function(){
-					 $(document).bind("active.idleTimer", function(){
-							      window.markMyVisit(window.cvid);		 
-							  });
-				     });
-		   });
-
-    Meteor.setInterval(function(){
-			   console.log('idle');
-			   Visitors.remove({expr: {$lt: (new Date()).getTime()}});
-		       }, 10000);
-
-
-    window.markMyVisit = function(cvid) {
-	//    Meteor.setInterval(function() {
-	if (!cvid) {
-	    cvid = getCookie('cvid');
-	    if (cvid === 'undefined') {
-		cvid = null;
-	    }
-	}
-	var cuser = Session.get("current_user");
-	console.log('visitors count: ', Visitors.find({}).count());
-	var expr = (new Date()).getTime() + 15000;
-	if (!cuser){
-	    if (!cvid) {
-		console.log('no cuser no cvid, insert!');
-		window.cvid = Visitors.insert({fbid: 'ayal.gelles', name: 'Anonymous', expr: expr});
-	    }
-	    else {
-		console.log('no cuser yes cvid');
-		var vid = Visitors.findOne(cvid);
-		if (vid) {
-		    console.log('.. and in db');
-		}
-		else {
-		    console.log('.. NOT in db');
-		    window.cvid = Visitors.insert({fbid: 'ayal.gelles', name: 'Anonymous', expr: expr});
-		}
-
-	    }
-	}
-	else {
-
-	    var vid = Visitors.findOne({fbid: cuser.id});
-	    if (!cvid) {
-		if (vid) {
-		    console.log('cuser no cvid already in db');
-		    window.cvid = vid._id;   
-		}
-		else {
-		    console.log('cuser no cvid not in db insert!', cuser.id);
-		    window.cvid = Visitors.insert({fbid: cuser.id, name: cuser.name, expr: expr});
-
-		}
-	    }
-	    else {
-		if (vid) {
-		    console.log('cuser and cvid already in db', vid);
-		    if (vid.name !== cuser.name) {
-			console.log('deleting');
-			Visitors.remove(cvid);	 
-		    }
-		}
-		else {
-		    console.log('removing', cvid);
-		    Visitors.remove(cvid);
-		    console.log('cuser and cvid, not in db, insert!', vid, cuser.id);
-		    window.cvid = Visitors.insert({fbid: cuser.id, name: cuser.name, expr: expr});
-		}
-	    }
-	}
-	setCookie('cvid', window.cvid, 100);
-    };
-
     Template.visitors.visitors = function () {
 	console.log('visitorz');
-
+	
 	var x = Visitors.find({});
 	return x;
     };   
@@ -133,12 +114,19 @@ if (Meteor.is_client) {
 
 // On server startup, create some players if the database is empty.
 if (Meteor.is_server) {
+
+    Meteor.setInterval(function(){
+			   Visitors.find({expr: {$lt: (new Date()).getTime()}}).forEach(function(visitor){
+											    Visitors.remove(visitor);
+											});
+		       }, 30000);
+
     
     Meteor.startup(function () {
-//		       $(document).bind("idle.idleTimer", function(){
-  
-//		       Players.remove({});
-//		       Players.ensureIndex({fbid:1});		       
+		       //		       $(document).bind("idle.idleTimer", function(){
+		       
+		       //		       Players.remove({});
+		       //		       Players.ensureIndex({fbid:1});		       
 		   });
 }
 
