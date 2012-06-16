@@ -41,7 +41,7 @@ Meteor.methods({'markMyVisit' :  function(cuser, cvid) {
 			}
 
 			
-			Visitors.update(idToUpdated, {$set: {fbid: cuser.id, name: cuser.name, expr: expr}});
+			Visitors.update(idToUpdate, {$set: {fbid: cuser.id, name: cuser.name, expr: expr}});
 			return idToUpdate;
 
 			return undefined;
@@ -99,7 +99,6 @@ if (Meteor.is_client) {
     
     Template.visitors.visitors = function () {
 	console.log('visitorz');
-	
 	var x = Visitors.find({});
 	return x;
     };   
@@ -114,12 +113,11 @@ if (Meteor.is_client) {
 
 // On server startup, create some players if the database is empty.
 if (Meteor.is_server) {
-
     Meteor.setInterval(function(){
 			   Visitors.find({expr: {$lt: (new Date()).getTime()}}).forEach(function(visitor){
 											    Visitors.remove(visitor);
 											});
-		       }, 30000);
+		       }, 8000);
 
     
     Meteor.startup(function () {
