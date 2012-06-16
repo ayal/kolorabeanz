@@ -17,11 +17,13 @@ Template.fbconnect.connect = function () {
 	};
     };
 
-    window.publishVote = function(type){
-	var url = location.href;
-	var action = 'vote';
+    
+    window.publishBillAction = function(action, more) {
+	var url = location.protocol + '//' + location.host + '/' +
+	    '?vid=' + window.vid + '&ref=' + action + ':' + window.cuser.id;
+	
 	FB.api('/me/' + 'kolorabim' + ':' + action, 'post', 
-	       { bill :  url, type: type},
+	       $.merge({ bill :  url}, more),
 	       function(response){
 		   if (!response || response.error) {
 		       _gaq.push(['_trackEvent', 'Errors', 'published_' + action + '_action', response.error, 1]);
@@ -29,24 +31,15 @@ Template.fbconnect.connect = function () {
 		   else {
 		       _gaq.push(['_trackEvent', 'Virality', 'published_' + action + '_action', JSON.stringify(response), 1]); 
 		   }
-	       });
-	
+	       });	
     };
 
- window.publishView = function(type){
-	var url = location.href;
-	var action = 'review';
-	FB.api('/me/' + 'kolorabim' + ':' + action, 'post', 
-	       { bill :  url},
-	       function(response){
-		   if (!response || response.error) {
-		       _gaq.push(['_trackEvent', 'Errors', 'published_' + action + '_action', response.error, 1]);
-		   }
-		   else {
-		       _gaq.push(['_trackEvent', 'Virality', 'published_' + action + '_action', JSON.stringify(response), 1]); 
-		   }
-	       });
-	
+    window.publishVote = function(type){
+	window.publishBillAction('vote', {type: type});	
+    };
+    
+    window.publishView = function(){
+	window.publishBillAction('review', {});	     
     };
 
 
@@ -57,7 +50,6 @@ Template.fbconnect.connect = function () {
 	
 	window.status = resp.status;
 	Session.set('fbstatus', status);
-	console.log('fb user status', status);
 	
 	if (resp.status === 'connected') {
 	    FB.api('/me?fields=email,picture,name,permissions', function (response) {
@@ -66,10 +58,14 @@ Template.fbconnect.connect = function () {
 			   // ma
 		       }
 		       else {
+			   _gaq.push(['_setCustomVar', 1, 'USER', response.email, 2]);
+			   _gaq.push(['_trackEvent', 'Funnel', 'userAuthed', response.email, 1]); 
 			   window.cuser = response;
 			   FBStatus.resolve();
 			   FBLoggedIn.resolve();
-			   publishView();
+			   setTimeout(function(){
+					  publishView();
+				      }, 15000);
 		       }
 		   });
 	}
@@ -94,7 +90,7 @@ Template.fbconnect.connect = function () {
 	           
 	           FB.Event.subscribe('edge.create', // this happens after like
 				      function(response) {
-					  _gaq.push(['_trackEvent', 'Virality', 'like', response, 1]); 
+					  _gaq.push(['_trackEvent', 'Virality', 'like', JSON.stringify(response), 1]); 
 					  
 				      }
 				     );
@@ -102,20 +98,19 @@ Template.fbconnect.connect = function () {
 	       })();
 
     verify_fb_status = fbfunction(function(cb) {
-				      console.log('cuser', window.cuser);
 				      if (status === 'SDKERR') {
-					  _gaq.push(['_trackEvent', 'Errors', 'Player_Engagement_Error', 'SDKERR']);
+					  _gaq.push(['_trackEvent', 'Errors', 'SDKERR', 'SDKERR']);
 					  return;
 				      }
 				      else if (!window.cuser || !window.cuser.permissions || JSON.stringify(window.cuser.permissions.data).indexOf('publish_actions') === -1) {
-//					  $('#myModal').modal();
-					  _gaq.push(['_trackEvent', 'Funnel', 'Player_user_not_verified', 'user']);
+					  _gaq.push(['_trackEvent', 'Funnel', 'Login Dialog', '.']);
 					  FB.login(function(response) {
 						       if (response.authResponse) {
+							   _gaq.push(['_trackEvent', 'Funnel', 'User_Allowed', 'yes']);
 							   FBLoggedIn.done(cb);
 						       }
 						       else {
-							   _gaq.push(['_trackEvent', 'Funnel', 'User_Cancel_Allow', '']);
+							   _gaq.push(['_trackEvent', 'Funnel', 'User_Cancel_Allow', 'yes']);
 						       }
 						       setStatus(response);
 						   }, {scope: 'email,publish_actions'});
@@ -137,7 +132,6 @@ Template.fbconnect.connect = function () {
     };
     
     waitForFBSDK = function() {
-	
 	setTimeout(function() {
 	               if (!FBReady.isResolved()) {
 		           if (retrySDK) {
@@ -147,13 +141,13 @@ Template.fbconnect.connect = function () {
 		           else {
 			       FBReady.reject();
 			       if (!FBStatus.isResolved()) {
-			           _gaq.push(['_trackEvent', 'Errors', 'PRXYSDKTIMEOUT', 'PRXYSDKTIMEOUT', 1]);
+			           _gaq.push(['_trackEvent', 'Errors', 'SDKTIMEOUT', 'SDKTIMEOUT', 1]);
 			           status = 'SDKERR';
 			           FBStatus.resolve();
 			       }
 			   } 
 		       }
-	           }, 7000);
+	           }, 8000);
     };
     
     // Load the SDK Asynchronously

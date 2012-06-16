@@ -6,6 +6,61 @@
   <meta property="og:description" content="Social Parliament"/>
   <meta property="fb:app_id" content="140153199345253"/>
   <meta property="og:type" content="kolorabim:bill"/>
+
+<script type="text/javascript">
+
+  // Set up a collection to contain player information. On the server,
+  // it is backed by a MongoDB collection named "players."
+  function getParameterByName(name) {
+  
+  name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+  var regexS = "[\\?&]" + name + "=([^&#]*)";
+  var regex = new RegExp(regexS);
+  var results = regex.exec(window.location.search);
+  if(results == null)
+  return "";
+  else
+  return decodeURIComponent(results[1].replace(/\+/g, " "));
+  }
+
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-32699215-1']);
+  _gaq.push(['_setCustomVar', 1, 'USER', 'pre-auth-' + (new Date()).getTime(), 2]);
+  _gaq.push(['_setCustomVar', 2, 'ref', getParameterByName('ref') || 'noref', 3]);
+  _gaq.push(['_setCustomVar', 3, 'pid', getParameterByName('vid') || 'nopid', 3]);
+  _gaq.push(['_trackPageview']);
+  
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+  var bbtimer = {
+  start: function(x){
+  this[x] = new Date().getTime();
+  },
+  watch: function(x){
+  return (new Date()).getTime() - this[x];
+  },
+  send: function(x) {
+  _gaq.push(['_trackTiming', 'TIME', x, (new Date()).getTime() - this[x], x]);
+  _gaq.push(['_trackEvent', 'TIME', x, '' + (new Date()).getTime() - this[x], (new Date()).getTime() - this[x]]);
+  }
+  };
+  
+  bbtimer.start('session');
+  window.onbeforeunload = function() {
+  bbtimer.send('session');
+  }
+  
+  window.onerror = function(){
+  _gaq.push(['_trackEvent', 'Errors', 'UNCAUGHT-EXCEPTION', JSON.stringify(arguments), 1]);    
+  };
+  
+</script>
+
 </head>
 
 <body>

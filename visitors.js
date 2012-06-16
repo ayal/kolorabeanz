@@ -4,10 +4,8 @@
 Visitors = new Meteor.Collection("visitors");
 
 Meteor.methods({'markMyVisit' :  function(cuser, cvid) {
-		    console.log('marking on the client', cuser, cvid);
 		    var expr = (new Date()).getTime() + 15000;
 		    if (!cuser){
-			console.log('no cuser', cuser);
 			if (cvid) {
 			    var objToUpdate = Visitors.findOne({_id: cvid});
 			    if (!objToUpdate) {
@@ -24,7 +22,6 @@ Meteor.methods({'markMyVisit' :  function(cuser, cvid) {
 			return Visitors.insert({fbid: 'ayal.gelles', name: 'Anonymous', expr: expr});
 		    }
 		    else {
-			console.log('yes cuser', vid);
 			var vid = Visitors.findOne({fbid: cuser.id});
 			if (!vid) {
 			    return Visitors.insert({fbid: cuser.id, name: cuser.name, expr: expr});
@@ -32,7 +29,7 @@ Meteor.methods({'markMyVisit' :  function(cuser, cvid) {
 			
 			var idToUpdate = cvid || vid._id;
 			var objToUpdate = Visitors.findOne({_id: idToUpdate});
-			console.log('idtoupdate', idToUpdate);
+
 			if (typeof objToUpdate === 'undefined' || !idToUpdate) {
 			    if (Meteor.is_simulation || Meteor.is_client) {
 				window.cvid = null; // invalidate the cvid on the client since it was delete by the server's cleanup
@@ -83,22 +80,18 @@ if (Meteor.is_client) {
 		    
     FBStatus.done(function(){
 		      Meteor.call('markMyVisit', Session.get("current_user"), window.cvid, function(e, r){
-				      console.log('got cvid', r);
 				      window.cvid = r;
 				  });
 		  });
 
     $(document).bind("active.idleTimer", function() {
-			 console.log('marking visit');
 			 Meteor.call('markMyVisit', Session.get("current_user"), window.cvid, function(e, r){
-					 console.log('got cvid', r);
 					 window.cvid = r;
 				     }); 
 		     });    
 
     
     Template.visitors.visitors = function () {
-	console.log('visitorz');
 	var x = Visitors.find({});
 	return x;
     };   
