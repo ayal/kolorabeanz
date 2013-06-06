@@ -47,7 +47,6 @@ Template.fbconnect.connect = function () {
 	if (status === resp.status){		
 	    return; // there is no need to update
 	}
-	
 	window.status = resp.status;
 	Session.set('fbstatus', status);
 	
@@ -74,10 +73,11 @@ Template.fbconnect.connect = function () {
 	}
     };
     
-    fbfunction(function() {
-	           FB.getLoginStatus(function(response) {
-					 setStatus(response);
-				     });
+  fbfunction(function() {
+    FB.getLoginStatus(function(response) {
+      window.fbdata = response;
+      setStatus(response);
+    });
 	           
 	           FB.Event.subscribe('auth.login', function(response) {
 					  setStatus(response);
@@ -105,6 +105,7 @@ Template.fbconnect.connect = function () {
 				      else if (!window.cuser || !window.cuser.permissions || JSON.stringify(window.cuser.permissions.data).indexOf('publish_actions') === -1) {
 					  _gaq.push(['_trackEvent', 'Funnel', 'Login Dialog', '.']);
 					  FB.login(function(response) {
+                                            window.fbdata = response;
 						       if (response.authResponse) {
 							   _gaq.push(['_trackEvent', 'Funnel', 'User_Allowed', 'yes']);
 							   FBLoggedIn.done(cb);
@@ -123,7 +124,7 @@ Template.fbconnect.connect = function () {
     
     window.fbAsyncInit = function() {
         FB.init({
-		    appId      : '140153199345253', // App ID
+		    appId      : location.href.indexOf('kolorabim.meteor.com') !== -1 ? '140153199345253' : '344786502283906', // App ID
 		    status     : true, // check login status
 		    cookie     : true, // enable cookies to allow the server to access the session
 		    xfbml      : true  // parse XFBML

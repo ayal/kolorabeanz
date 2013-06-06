@@ -1,8 +1,7 @@
 <head>
   <title>הצעת חוק</title>
-  <meta property="og:title" content="הצעת חוק"/>
   <meta property="og:image" content="https://fbcdn-photos-a.akamaihd.net/photos-ak-snc7/v27562/73/140153199345253/app_1_140153199345253_170.gif" />
-  <meta property="og:site_name" content="Moovu"/>
+  <meta property="og:site_name" content="Peachy"/>
   <meta property="og:description" content="Social Parliament"/>
   <meta property="fb:app_id" content="140153199345253"/>
   <meta property="og:type" content="kolorabim:bill"/>
@@ -75,7 +74,11 @@
     </div>
     <div class="span5 {{valid}}">
       {{> binfo}}
-      {{> oknesset}}
+      <div class="oknesset">
+	<iframe frameborder="0"></iframe>
+	<div class="fb-comments" data-href="{{commentsHref}}" data-num-posts="4" data-width="470"></div>
+      </div>
+
     </div>
     <div class="{{sizeOfOthers}}">
       <div class="row">
@@ -103,13 +106,6 @@
       </li>
       {{/each}}
     </ul>
-  </div>
-</template>
-
-<template name="oknesset">
-  <div class="oknesset">
-    <iframe frameborder="0" src='http://oknesset.org/bill/{{vid}}/embed/'></iframe>
-    <div class="fb-comments" data-href="{{commentsHref}}" data-num-posts="4" data-width="470"></div>
   </div>
 </template>
 
