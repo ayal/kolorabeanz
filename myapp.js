@@ -63,13 +63,23 @@ if (Meteor.is_client) {
     Meteor.subscribe("hooky", function() {
       console.log('hooky');
       window.vid && $.ajax({
-	url: 'http://oknesset.org/api/bill/' + window.vid + '/',
+	url: 'http://oknesset.org/api/bill/' + window.vid + '/?format=json',
 	dataType: 'jsonp',
 	jsonp: 'callback',
         success: function(data){
 	  Session.set('binfo', data);
-	  var bill = data;
-	  if (!bill || !bill.votes || !bill.votes.all) {
+	    var bill = data;
+	    if (!bill) {
+		return;
+	    }
+	    bill.bill_id = bill.url.replace('/bill/', '').replace('/', '');
+	    if (!bill.votes || !bill.votes.all) {
+		Meteor.call('insertit', bill, function(e,r){
+		if (e) {
+		    _gaq.push(['_trackEvent', 'Erros', 'insertit', JSON.stringify(e), 0, true]); 
+		}
+	    });
+
 	    return;
 	  }
 	  $.each(bill.votes.all, function(j, v) {
@@ -101,12 +111,14 @@ if (Meteor.is_client) {
   });
   
 
-  window.updateBillsFromOknesset = function(){
-    otherBills.remove({});
-    $.each([1, 1, 1, 1], function(page) {
-      var url = 'http://oknesset.org/api/bill/';
+    window.updateBillsFromOknesset = function(){
+	otherBills.find({}).fetch().forEach(function(x){
+	    otherBills.remove(x._id);
+      })
+	$.each([1, 1, 1, 1,1,1,1], function(page) {
+      var url = 'http://oknesset.org/api/bill/?format=json';
       if (page !== 0) {
-	url += '?page_num=' + page;
+	url += '&page_num=' + page;
       }
       var req = $.ajax({
 	url: url,
@@ -131,6 +143,15 @@ if (Meteor.is_client) {
 	      
 	    });
 	  });
+	    	    // remove dups in a hacky way
+	    setTimeout(function(){
+		otherBills.find({}).fetch().forEach(function(x){
+		    var fff = otherBills.find({"bill_id": x.bill_id}).fetch();
+		    console.log(fff)
+		    fff[1] &&  otherBills.remove(fff[1]._id)
+		});
+	    },3000);
+
 	},
 	error: function(xhr, ajaxOptions, thrownError) {
 	  _gaq.push(['_trackEvent', 'Erros', 'otherBillsXhr', JSON.stringify(thrownError), 0, true]); 
@@ -208,22 +229,20 @@ if (Meteor.is_client) {
   };
 }
 
-// On server startup, create some players if the database is empty.
-if (Meteor.is_server) {
-  
   Meteor.methods({
     insertit: function(bill) {
-      this.unblock();
-      var found = otherBills.findOne({'bill_id': bill.bill_id});
-      if (!found) {
-	otherBills.insert(bill);
-	return 'inserted';
-      }
-      else {
-	otherBills.update({'bill_id': bill.bill_id}, {$set: bill});
-	return 'updated';
-      }
-
+	this.unblock && this.unblock();
+	var found = otherBills.findOne({'bill_id': bill.bill_id});
+	if (!found) {
+	    console.log('inserting', bill.bill_id);
+	    otherBills.insert(bill);
+	    return 'inserted';
+	}
+	else {
+	    console.log('updating', bill.bill_id)
+	    otherBills.update({'bill_id': bill.bill_id}, {$set: bill});
+	    return 'updated';
+	}
     },
     cleanOthers: function(){
       this.unblock();
@@ -231,6 +250,10 @@ if (Meteor.is_server) {
       return null;
     }
   });
+
+// On server startup, create some players if the database is empty.
+if (Meteor.is_server) {
+  
   Meteor.publish("theplayers", function () {
     return Players.find({});
   });
