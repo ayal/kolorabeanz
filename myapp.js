@@ -63,7 +63,7 @@ if (Meteor.is_client) {
     Meteor.subscribe("hooky", function() {
       console.log('hooky');
       window.vid && $.ajax({
-	url: 'http://oknesset.org/api/bill/' + window.vid + '/',
+	url: 'http://oknesset.org/api/bill/' + window.vid + '/?format=json',
 	dataType: 'jsonp',
 	jsonp: 'callback',
         success: function(data){
@@ -102,11 +102,14 @@ if (Meteor.is_client) {
   
 
   window.updateBillsFromOknesset = function(){
-    otherBills.remove({});
-    $.each([1, 1, 1, 1], function(page) {
-      var url = 'http://oknesset.org/api/bill/';
+    otherBills.find().forEach(function(x){
+      otherBills.remove(x._id);
+    });
+
+    $.each([1, 1, 1, 1, 1, 1, 1, 1, 1], function(page) {
+      var url = 'http://oknesset.org/api/bill/?format=json';
       if (page !== 0) {
-	url += '?page_num=' + page;
+	url += '&page_num=' + page;
       }
       var req = $.ajax({
 	url: url,
@@ -118,8 +121,8 @@ if (Meteor.is_client) {
 	    bill.bill_id = bill.url.replace('/bill/', '').replace('/', '');
 	    $.each(bill.votes.all, function(j, v) {
 	      if (!v) return;
-	      var voters = v.count_against_votes + v.count_didnt_votes + v.count_for_votes;
-	      if (voters > 50) {
+	      var voters = Math.abs(v.count_against_votes - v.count_for_votes);
+	      if (voters < 15) {
                 //								      hash[bill.url] = bill;
 		bill.voters = voters;
 		Meteor.call('insertit', bill, function(e,r){
@@ -141,7 +144,7 @@ if (Meteor.is_client) {
   };
   
   Template.others.bills = function () {
-    return otherBills.find({voters: {$gt: -1}}, {sort: {voters: -1}});
+    return otherBills.find().fetch().filter(function(x){return x.votes.all}).map(function(x){console.log(x.votes.all[0]); var y = 0; x.votes.all.forEach(function(v){if (!v){return;}y += v.count_against_votes - v.count_for_votes;});  console.log(y); return {s: Math.abs(y), x: x};}).sort(function(a,b){return a.s - b.s}).map(function(x){return x.x;});
   };
   
   Template.others.active = function () {
@@ -207,19 +210,17 @@ if (Meteor.is_client) {
     }
   };
 }
-
-// On server startup, create some players if the database is empty.
-if (Meteor.is_server) {
-  
   Meteor.methods({
     insertit: function(bill) {
-      this.unblock();
+      this.unblock && this.unblock();
       var found = otherBills.findOne({'bill_id': bill.bill_id});
       if (!found) {
+        console.log('>>>>>>> inserting bill', bill.bill_id);
 	otherBills.insert(bill);
 	return 'inserted';
       }
       else {
+        console.log('>>>>>>> updating bill', bill.bill_id);
 	otherBills.update({'bill_id': bill.bill_id}, {$set: bill});
 	return 'updated';
       }
@@ -231,6 +232,10 @@ if (Meteor.is_server) {
       return null;
     }
   });
+// On server startup, create some players if the database is empty.
+if (Meteor.is_server) {
+  
+
   Meteor.publish("theplayers", function () {
     return Players.find({});
   });
