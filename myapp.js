@@ -102,15 +102,17 @@ if (Meteor.is_client) {
 	}
       });
 
-      var cbill = otherBills.findOne({bill_id: window.vid});
-      if (cbill) {
-        $('title').text(cbill.bill_title);
-        $('head').append('<meta property="og:title" content="' + cbill.bill_title + '" />'); 
-      }
+	var cbill = otherBills.findOne({bill_id: window.vid});
+	if (cbill) {
+            $('title').text(cbill.bill_title);
+            $('head').append('<meta property="og:title" content="' + cbill.bill_title + '" />'); 
+	}
+	window.okspidy = true;
     });
   });
-  
 
+    window.okspidy = false;
+    
     window.updateBillsFromOknesset = function(){
 	otherBills.find({}).fetch().forEach(function(x){
 	    otherBills.remove(x._id);
